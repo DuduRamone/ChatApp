@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chat</title>
+  </head>
+  <body>
+    <h1>Bem vindo à sala de chat {{room}}</h1>
+
+    <div id="messages">
+      <form id="message_input_form">
+        <input
+          type="text"
+          placeholder="Digite sua mensagem"
+          id="message_input"
+        />
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </body>
+  <script
+    src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+    integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    const socket = io.connect("localhost:3000")
+
+    socket.on("connect", function () {
+      socket.emit("join_room", {
+        username: "{{ username }}",
+        room: "{{ room }}",
+      })
+
+      let message_input = document.getElementById("message_input")
+      document.getElementById("message_input_form").onsubmit = function (e) {
+        e.preventDefault()
+        let message = message_input.value.trim()
+        if (message.length) {
+          socket.emit("send_message", {
+            username: "{{ username }}",
+            room: "{{ room }}",
+            message: message,
+          })
+        }
+
+        message_input.value = ""
+        message_input.focus()
+      }
+    })
+
+    socket.on("receive_message", function (data) {
+      console.log(data)
+      const newNode = document.createElement("div")
+      newNode.innerHTML = `<b>${data.username}:&nbsp</b> ${data.message}`
+      document.getElementById("messages").appendChild(newNode)
+    })
+
+    socket.on("join_room_annoucement", function (data) {
+      console.log(data)
+      const newNode = document.createElement("div")
+      newNode.innerHTML = `<b>${data.username}</b> entrou na sala`
+      document.getElementById("messages").appendChild(newNode)
+    })
+
+    window.onbeforeunload = function () {
+      socket.emit("leave_room", {
+        username: "{{ username }}",
+        room: "{{ room }}",
+      })
+    }
+
+    socket.on("leave_room_annoucement", function (data) {
+      console.log(data)
+      const newNode = document.createElement("div")
+      newNode.innerHTML = `<b>${data.username}</b> saiu da sala`
+      document.getElementById("messages").appendChild(newNode)
+    })
+  </script>
+</html>
