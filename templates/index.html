@@ -7,13 +7,17 @@
   </head>
   <body>
     <h1>Meu Chat</h1>
+    <h3>
+      Olá,{% if current_user.is_authenticated %}{{ current_user.username }}{%
+      else %}Visitante{% endif %}
+    </h3>
     <form action="/chat">
       <div>
         <label>Digite seu nome:</label>
         <input type="text" name="username" />
       </div>
       <div>
-        <label>Digite seu ID:</label>
+        <label>Digite o ID da sala:</label>
         <input type="text" name="room" />
       </div>
       <button type="submit">Entrar</button>
