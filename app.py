@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
-from db import get_user
+from db import get_user, save_user
 
 app = Flask(__name__)
 app.secret_key = 'secreto'
@@ -38,6 +38,28 @@ def login():
 def logout():
   logout_user()
   return redirect(url_for("home"))
+
+@app.route("/signup", methods=['GET', 'POST'])
+def signup():
+  if current_user.is_authenticated:
+    return redirect(url_for("home"))
+
+  message = ''
+
+  if request.method == 'POST':
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    try:
+      save_user(username, email, password)
+      return redirect(url_for('login'))
+    
+    except:
+      message = "Esse usuário já existe"
+
+  return render_template('signup.html', message=message)
+
 
 @app.route("/chat")
 @login_required
